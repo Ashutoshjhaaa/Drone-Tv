@@ -118,6 +118,17 @@
 
       <!-- Right Utility Actions -->
       <div class="header-utilities">
+        <!-- TV Mode & Fullscreen Controls for Smart TV / 10-Foot Experience -->
+        <button class="tv-mode-btn" id="tvModeToggleBtn" type="button" aria-label="Toggle Smart TV Experience" title="Toggle 10-Foot TV Mode (Press 'T')">
+          <i class="fa-solid fa-tv" aria-hidden="true"></i>
+          <span class="tv-mode-text">TV Mode</span>
+          <span class="tv-mode-pill" id="tvModePill">OFF</span>
+        </button>
+
+        <button class="tv-fullscreen-btn" id="tvFullscreenBtn" type="button" aria-label="Toggle Fullscreen" title="Toggle Fullscreen (Press 'F')">
+          <i class="fa-solid fa-expand" aria-hidden="true"></i>
+        </button>
+
         <div class="account-dropdown">
           <button class="account-btn" id="accountMenuBtn" aria-label="Account Menu" aria-haspopup="true">
             <i class="fa-regular fa-user" aria-hidden="true"></i>
@@ -785,6 +796,39 @@
       </div>
     </div>
   </div>
+
+  <!-- ================= SMART TV REMOTE HUD / CONTROLS ================= -->
+  <aside class="tv-remote-hud" id="tvRemoteHud" role="region" aria-label="Smart TV Navigation Guide" aria-hidden="true">
+    <div class="tv-hud-inner">
+      <div class="tv-hud-badge">
+        <i class="fa-solid fa-satellite-dish fa-spin-pulse"></i>
+        <span>TV 10-FT EXPERIENCE</span>
+      </div>
+      <div class="tv-hud-keys">
+        <span class="tv-key-item"><kbd class="tv-kbd"><i class="fa-solid fa-arrow-left"></i></kbd><kbd class="tv-kbd"><i class="fa-solid fa-arrow-up"></i></kbd><kbd class="tv-kbd"><i class="fa-solid fa-arrow-down"></i></kbd><kbd class="tv-kbd"><i class="fa-solid fa-arrow-right"></i></kbd> <span class="tv-key-label">Remote / Arrows</span></span>
+        <span class="tv-key-divider"></span>
+        <span class="tv-key-item"><kbd class="tv-kbd highlight">OK / Enter</kbd> <span class="tv-key-label">Select</span></span>
+        <span class="tv-key-divider"></span>
+        <span class="tv-key-item"><kbd class="tv-kbd">Back / Esc</kbd> <span class="tv-key-label">Close / Back</span></span>
+        <span class="tv-key-divider"></span>
+        <span class="tv-key-item"><kbd class="tv-kbd">S</kbd> <span class="tv-key-label">Search</span></span>
+        <span class="tv-key-divider"></span>
+        <span class="tv-key-item"><kbd class="tv-kbd">1-6</kbd> <span class="tv-key-label">Quick Categories</span></span>
+        <span class="tv-key-divider"></span>
+        <span class="tv-key-item"><kbd class="tv-kbd">F</kbd> <span class="tv-key-label">Fullscreen</span></span>
+        <span class="tv-key-divider"></span>
+        <span class="tv-key-item"><kbd class="tv-kbd">T</kbd> <span class="tv-key-label">Toggle TV</span></span>
+      </div>
+      <div class="tv-hud-actions">
+        <button type="button" class="tv-hud-action-btn" id="tvShowcaseModeBtn" title="Auto-Cycle Showcase Mode">
+          <i class="fa-solid fa-play"></i> <span>Auto Show</span>
+        </button>
+        <button type="button" class="tv-hud-hide-btn" id="tvHudDismissBtn" aria-label="Dismiss TV Helper" title="Hide Shortcut Bar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <!-- Global Toast Notification Container -->
   <div class="toast-container" id="toastContainer" aria-live="assertive" aria-atomic="true"></div>

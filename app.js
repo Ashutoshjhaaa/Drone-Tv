@@ -408,6 +408,14 @@ document.addEventListener('DOMContentLoaded', () => {
     detailsBadge: document.getElementById('detailsBadge'),
     detailsBody: document.getElementById('detailsBody'),
 
+    // TV & 10-Foot UI Elements
+    tvModeToggleBtn: document.getElementById('tvModeToggleBtn'),
+    tvModePill: document.getElementById('tvModePill'),
+    tvFullscreenBtn: document.getElementById('tvFullscreenBtn'),
+    tvRemoteHud: document.getElementById('tvRemoteHud'),
+    tvHudDismissBtn: document.getElementById('tvHudDismissBtn'),
+    tvShowcaseModeBtn: document.getElementById('tvShowcaseModeBtn'),
+
     // Toast Container
     toastContainer: document.getElementById('toastContainer')
   };
@@ -1296,7 +1304,334 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
-  // 9. APP INITIALIZATION
+  // 9. SMART TV & 10-FOOT UI CONTROLLER ENGINE
+  // =========================================================================
+  let isTvModeActive = false;
+  let isShowcaseRunning = false;
+  let showcaseTimer = null;
+  let currentSpatialFocusIndex = -1;
+
+  /**
+   * Check if current device is a Smart TV platform
+   */
+  function isTvDeviceDetected() {
+    const ua = navigator.userAgent || '';
+    const isTvUserAgent = /SmartTV|Tizen|Web0S|NetCast|HbbTV|Android.*TV|GoogleTV|AppleTV|Roku|Viera|BRAVIA/i.test(ua);
+    const isUltraLargeTouchless = window.innerWidth >= 1920 && !('ontouchstart' in window);
+    return isTvUserAgent;
+  }
+
+  /**
+   * Toggle Smart TV Mode
+   * @param {boolean|null} forceState
+   */
+  function toggleTvMode(forceState = null) {
+    if (forceState !== null) {
+      isTvModeActive = forceState;
+    } else {
+      isTvModeActive = !isTvModeActive;
+    }
+
+    document.body.classList.toggle('tv-mode', isTvModeActive);
+
+    if (DOM.tvModeToggleBtn) {
+      DOM.tvModeToggleBtn.classList.toggle('active', isTvModeActive);
+    }
+
+    if (DOM.tvModePill) {
+      DOM.tvModePill.textContent = isTvModeActive ? 'ON' : 'OFF';
+    }
+
+    if (DOM.tvRemoteHud) {
+      if (isTvModeActive) {
+        DOM.tvRemoteHud.setAttribute('aria-hidden', 'false');
+      } else {
+        DOM.tvRemoteHud.setAttribute('aria-hidden', 'true');
+        stopShowcaseMode();
+      }
+    }
+
+    localStorage.setItem('dronetv_tv_mode', isTvModeActive ? 'true' : 'false');
+
+    if (isTvModeActive) {
+      showToast('📺 Smart TV Mode Activated! Remote & D-Pad Navigation Enabled.', 'info');
+      // Set initial focus to first card or search
+      const firstFocusable = document.querySelector('.service-card .view-details-btn, #serviceSearchInput');
+      if (firstFocusable) {
+        firstFocusable.focus();
+        firstFocusable.classList.add('tv-focused');
+      }
+    } else {
+      showToast('🖥️ Standard Desktop/Mobile Mode Restored.', 'info');
+      document.querySelectorAll('.tv-focused').forEach(el => el.classList.remove('tv-focused'));
+    }
+  }
+
+  /**
+   * Fullscreen Toggle for Smart TV & Living Room Displays
+   */
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {
+        showToast('Fullscreen mode blocked or unsupported by browser.', 'info');
+      });
+      if (DOM.tvFullscreenBtn) DOM.tvFullscreenBtn.innerHTML = '<i class="fa-solid fa-compress"></i>';
+      showToast('⛶ Fullscreen Presentation Mode Enabled.', 'info');
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      if (DOM.tvFullscreenBtn) DOM.tvFullscreenBtn.innerHTML = '<i class="fa-solid fa-expand"></i>';
+      showToast('Exited Fullscreen Mode.', 'info');
+    }
+  }
+
+  /**
+   * Spatial Navigation Engine for TV Remote Controls & Arrow Keys
+   * Uses Euclidean geometric distance to find best candidate in requested direction
+   * @param {'ArrowUp'|'ArrowDown'|'ArrowLeft'|'ArrowRight'} direction
+   */
+  function handleSpatialNavigation(direction) {
+    const focusableSelectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled]):not([type="hidden"])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+
+    // If modal is open, scope to modal
+    let container = document;
+    if (DOM.enquireModal && DOM.enquireModal.classList.contains('open')) {
+      container = DOM.enquireModal;
+    } else if (DOM.detailsModal && DOM.detailsModal.classList.contains('open')) {
+      container = DOM.detailsModal;
+    }
+
+    const allFocusable = Array.from(container.querySelectorAll(focusableSelectors))
+      .filter(el => {
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && window.getComputedStyle(el).visibility !== 'hidden';
+      });
+
+    if (allFocusable.length === 0) return;
+
+    const currentEl = document.activeElement && allFocusable.includes(document.activeElement)
+      ? document.activeElement
+      : allFocusable[0];
+
+    const currentRect = currentEl.getBoundingClientRect();
+    const currentCenter = {
+      x: currentRect.left + currentRect.width / 2,
+      y: currentRect.top + currentRect.height / 2
+    };
+
+    let bestCandidate = null;
+    let minScore = Infinity;
+
+    allFocusable.forEach(candidate => {
+      if (candidate === currentEl) return;
+      const cRect = candidate.getBoundingClientRect();
+      const cCenter = {
+        x: cRect.left + cRect.width / 2,
+        y: cRect.top + cRect.height / 2
+      };
+
+      const dx = cCenter.x - currentCenter.x;
+      const dy = cCenter.y - currentCenter.y;
+
+      let isCandidateInDirection = false;
+      let primaryDistance = 0;
+      let orthogonalDistance = 0;
+
+      switch (direction) {
+        case 'ArrowRight':
+          if (dx > 5) {
+            isCandidateInDirection = true;
+            primaryDistance = dx;
+            orthogonalDistance = Math.abs(dy);
+          }
+          break;
+        case 'ArrowLeft':
+          if (dx < -5) {
+            isCandidateInDirection = true;
+            primaryDistance = -dx;
+            orthogonalDistance = Math.abs(dy);
+          }
+          break;
+        case 'ArrowDown':
+          if (dy > 5) {
+            isCandidateInDirection = true;
+            primaryDistance = dy;
+            orthogonalDistance = Math.abs(dx);
+          }
+          break;
+        case 'ArrowUp':
+          if (dy < -5) {
+            isCandidateInDirection = true;
+            primaryDistance = -dy;
+            orthogonalDistance = Math.abs(dx);
+          }
+          break;
+      }
+
+      if (isCandidateInDirection) {
+        // Penalty for elements that are far off axis
+        const score = primaryDistance + (orthogonalDistance * 2.2);
+        if (score < minScore) {
+          minScore = score;
+          bestCandidate = candidate;
+        }
+      }
+    });
+
+    if (bestCandidate) {
+      document.querySelectorAll('.tv-focused').forEach(el => el.classList.remove('tv-focused'));
+      bestCandidate.focus();
+      bestCandidate.classList.add('tv-focused');
+
+      // Keep focused element centered in TV viewing viewport
+      bestCandidate.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }
+
+  /**
+   * TV Auto Showcase Tour Mode (For Showrooms / Expos / TV screens)
+   */
+  function toggleShowcaseMode() {
+    if (isShowcaseRunning) {
+      stopShowcaseMode();
+    } else {
+      startShowcaseMode();
+    }
+  }
+
+  function startShowcaseMode() {
+    isShowcaseRunning = true;
+    if (DOM.tvShowcaseModeBtn) {
+      DOM.tvShowcaseModeBtn.classList.add('active');
+      DOM.tvShowcaseModeBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>Pause Tour</span>';
+    }
+    showToast('✨ Auto Showcase Tour Started. Browsing Drone Services...', 'info');
+
+    let currentCardIndex = 0;
+    showcaseTimer = setInterval(() => {
+      const cards = document.querySelectorAll('.service-card');
+      if (cards.length === 0) return;
+
+      cards.forEach(c => c.classList.remove('tv-focused'));
+      const card = cards[currentCardIndex % cards.length];
+      if (card) {
+        card.classList.add('tv-focused');
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      currentCardIndex++;
+    }, 4000);
+  }
+
+  function stopShowcaseMode() {
+    isShowcaseRunning = false;
+    if (showcaseTimer) clearInterval(showcaseTimer);
+    if (DOM.tvShowcaseModeBtn) {
+      DOM.tvShowcaseModeBtn.classList.remove('active');
+      DOM.tvShowcaseModeBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>Auto Show</span>';
+    }
+    document.querySelectorAll('.service-card.tv-focused').forEach(c => c.classList.remove('tv-focused'));
+  }
+
+  // TV Mode & Remote Action Listeners
+  if (DOM.tvModeToggleBtn) {
+    DOM.tvModeToggleBtn.addEventListener('click', () => toggleTvMode());
+  }
+
+  if (DOM.tvFullscreenBtn) {
+    DOM.tvFullscreenBtn.addEventListener('click', toggleFullscreen);
+  }
+
+  if (DOM.tvHudDismissBtn && DOM.tvRemoteHud) {
+    DOM.tvHudDismissBtn.addEventListener('click', () => {
+      DOM.tvRemoteHud.style.display = 'none';
+      showToast('Remote helper bar hidden. Press "T" anytime to toggle TV controls.', 'info');
+    });
+  }
+
+  if (DOM.tvShowcaseModeBtn) {
+    DOM.tvShowcaseModeBtn.addEventListener('click', toggleShowcaseMode);
+  }
+
+  // Smart TV Remote & Keyboard Shortcut System
+  document.addEventListener('keydown', (e) => {
+    const activeTag = (document.activeElement?.tagName || '').toLowerCase();
+    const isTyping = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+
+    // 1. D-Pad Directional Navigation (When in TV Mode or not typing in text fields)
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      if (!isTyping || isTvModeActive) {
+        // If user is inside a select or multiline textarea, allow standard behavior unless TV mode explicit
+        if (!isTyping || activeTag !== 'textarea') {
+          e.preventDefault();
+          handleSpatialNavigation(e.key);
+        }
+      }
+    }
+
+    // 2. TV Mode Toggle Shortcut ('T' or 't' when not typing)
+    if ((e.key === 't' || e.key === 'T') && !isTyping) {
+      e.preventDefault();
+      toggleTvMode();
+    }
+
+    // 3. Fullscreen Shortcut ('F' or 'f' when not typing)
+    if ((e.key === 'f' || e.key === 'F') && !isTyping) {
+      e.preventDefault();
+      toggleFullscreen();
+    }
+
+    // 4. Quick Jump to Search ('S' or '/' when not typing)
+    if ((e.key === 's' || e.key === 'S' || e.key === '/') && !isTyping) {
+      e.preventDefault();
+      if (DOM.serviceSearchInput) {
+        DOM.serviceSearchInput.focus();
+        DOM.serviceSearchInput.select();
+        showToast('🔍 Search focused. Type to filter services.', 'info');
+      }
+    }
+
+    // 5. Category Quick Jump (Keys 1 - 6)
+    if (['1', '2', '3', '4', '5', '6'].includes(e.key) && !isTyping) {
+      const categories = ['all', 'survey', 'inspection', 'training', 'consulting', 'software'];
+      const targetCat = categories[parseInt(e.key, 10) - 1];
+      if (targetCat) {
+        appStore.setState({ category: targetCat, currentPage: 1 });
+        DOM.categoryPills.forEach(p => {
+          if (p.getAttribute('data-category') === targetCat) {
+            p.classList.add('active');
+            p.setAttribute('aria-selected', 'true');
+          } else {
+            p.classList.remove('active');
+            p.setAttribute('aria-selected', 'false');
+          }
+        });
+        showToast(`Category switched to: ${targetCat.toUpperCase()}`, 'info');
+      }
+    }
+  });
+
+  // Track Focus for TV remote visual indicator
+  document.addEventListener('focusin', (e) => {
+    document.querySelectorAll('.tv-focused').forEach(el => el.classList.remove('tv-focused'));
+    if (isTvModeActive && e.target) {
+      e.target.classList.add('tv-focused');
+    }
+  });
+
+  // =========================================================================
+  // 10. APP INITIALIZATION & AUTO-TV DETECTION
   // =========================================================================
   appStore.subscribe(render);
   
@@ -1304,5 +1639,12 @@ document.addEventListener('DOMContentLoaded', () => {
   render(appStore.state);
   animateMetrics();
 
-  console.info('🚀 DroneTV.in Services Platform Initialized with Senior-Grade Architecture.');
+  // Initialize TV Mode if previously stored or if Smart TV device detected
+  const savedTvPref = localStorage.getItem('dronetv_tv_mode');
+  if (savedTvPref === 'true' || (savedTvPref === null && isTvDeviceDetected())) {
+    toggleTvMode(true);
+  }
+
+  console.info('🚀 DroneTV.in Services Platform Initialized with Senior-Grade TV & 10-Foot UI Engine.');
 });
+

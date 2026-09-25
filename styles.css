@@ -345,6 +345,67 @@ button, input, select, textarea {
   position: relative;
 }
 
+.tv-mode-btn {
+  background: rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-instant);
+}
+
+.tv-mode-btn:hover {
+  background-color: rgba(0, 0, 0, 0.16);
+  transform: translateY(-1px);
+}
+
+.tv-mode-btn.active {
+  background: #0B0F19;
+  color: #FFDC00;
+  border-color: #000000;
+  box-shadow: 0 0 12px rgba(255, 220, 0, 0.4);
+}
+
+.tv-mode-pill {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: #475569;
+  color: #FFFFFF;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.tv-mode-btn.active .tv-mode-pill {
+  background: #FFDC00;
+  color: #000000;
+}
+
+.tv-fullscreen-btn {
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #111827;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--transition-instant);
+}
+
+.tv-fullscreen-btn:hover {
+  background-color: rgba(0, 0, 0, 0.14);
+}
+
 .account-btn, .lang-btn {
   background: transparent;
   border: none;
@@ -2662,6 +2723,450 @@ button, input, select, textarea {
 
   .card-actions {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   10. SMART TV & 10-FOOT UI DESIGN SYSTEM (1080p / 4K UHD / Living Room UI)
+   ========================================================================== */
+
+/* TV Remote Navigation Floating HUD */
+.tv-remote-hud {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: rgba(11, 15, 25, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 2px solid var(--primary-yellow);
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.6);
+  padding: 8px 24px;
+  display: none;
+  animation: tvHudSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tvHudSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+body.tv-mode .tv-remote-hud,
+.tv-remote-hud.visible {
+  display: block;
+}
+
+.tv-hud-inner {
+  max-width: 1720px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tv-hud-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary-yellow);
+  color: #000000;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 12px rgba(255, 220, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.tv-hud-keys {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tv-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #E2E8F0;
+  font-weight: 600;
+}
+
+.tv-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 24px;
+  padding: 2px 7px;
+  background: #1E293B;
+  border: 1px solid #475569;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  color: #F8FAFC;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  box-shadow: 0 2px 0 #0F172A;
+}
+
+.tv-kbd.highlight {
+  background: #0284C7;
+  border-color: #38BDF8;
+  color: #FFFFFF;
+}
+
+.tv-key-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.tv-key-label {
+  color: #94A3B8;
+  font-size: 0.78rem;
+}
+
+.tv-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.tv-hud-action-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--transition-instant);
+}
+
+.tv-hud-action-btn:hover {
+  background: var(--primary-yellow);
+  color: #000000;
+  border-color: var(--primary-yellow);
+}
+
+.tv-hud-action-btn.active {
+  background: #10B981;
+  color: #FFFFFF;
+  border-color: #059669;
+}
+
+.tv-hud-hide-btn {
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-instant);
+}
+
+.tv-hud-hide-btn:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* ================= TV SPATIAL FOCUS & ACTIVE HIGHLIGHT ================= */
+body.tv-mode :focus-visible,
+body.tv-mode .tv-focused,
+:focus-visible.tv-focused {
+  outline: 3px solid #FFDC00 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.4), 0 0 26px rgba(255, 220, 0, 0.85) !important;
+  transform: scale(1.035) !important;
+  z-index: 40 !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s ease !important;
+}
+
+body.tv-mode .service-card:focus-within,
+body.tv-mode .service-card.tv-focused {
+  border-color: #FFDC00 !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18), 0 0 30px rgba(255, 220, 0, 0.4) !important;
+  transform: translateY(-6px) scale(1.025) !important;
+}
+
+/* ================= TV MODE BODY OVERRIDES ================= */
+body.tv-mode {
+  font-size: 18px;
+  line-height: 1.6;
+  padding-bottom: 50px;
+}
+
+body.tv-mode .site-header {
+  padding: 10px 0;
+}
+
+body.tv-mode .header-container {
+  padding: 0 max(32px, env(safe-area-inset-right));
+}
+
+body.tv-mode .brand-name {
+  font-size: 1.65rem;
+}
+
+body.tv-mode .logo-icon {
+  width: 44px;
+  height: 44px;
+  font-size: 1.45rem;
+}
+
+body.tv-mode .nav-link {
+  font-size: 1rem;
+  padding: 8px 14px;
+}
+
+body.tv-mode .metrics-bar {
+  padding: 12px 0;
+}
+
+body.tv-mode .metric-item {
+  padding: 6px 14px;
+}
+
+body.tv-mode .metric-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 1.35rem;
+}
+
+body.tv-mode .metric-value {
+  font-size: 1.55rem;
+}
+
+body.tv-mode .metric-label {
+  font-size: 0.85rem;
+}
+
+body.tv-mode .platform-title {
+  font-size: 1.55rem;
+}
+
+body.tv-mode .platform-subtitle {
+  font-size: 0.92rem;
+}
+
+body.tv-mode .filter-ribbon {
+  padding: 14px 0;
+}
+
+body.tv-mode .ribbon-select,
+body.tv-mode .search-box input {
+  height: 46px;
+  font-size: 1rem;
+}
+
+body.tv-mode .search-box {
+  height: 46px;
+}
+
+body.tv-mode .search-box input {
+  padding-left: 42px;
+}
+
+body.tv-mode .search-icon-input {
+  font-size: 1.15rem;
+  left: 14px;
+}
+
+body.tv-mode .search-submit-btn {
+  width: 38px;
+  height: 38px;
+  font-size: 1.05rem;
+}
+
+body.tv-mode .layout-container {
+  max-width: 1720px;
+  padding: 0 max(32px, env(safe-area-inset-right));
+  gap: 28px;
+}
+
+body.tv-mode .filters-sidebar {
+  width: 330px;
+}
+
+body.tv-mode .filter-title h3 {
+  font-size: 1.15rem;
+}
+
+body.tv-mode .category-pill-btn {
+  font-size: 0.95rem;
+  padding: 8px 14px;
+}
+
+body.tv-mode .checkbox-label-text {
+  font-size: 0.95rem;
+}
+
+body.tv-mode .services-count {
+  font-size: 1.65rem;
+}
+
+body.tv-mode .services-subtitle {
+  font-size: 0.95rem;
+}
+
+body.tv-mode .services-grid {
+  gap: 24px;
+}
+
+body.tv-mode .service-card {
+  border-width: 2px;
+  border-radius: var(--radius-lg);
+}
+
+body.tv-mode .card-thumb-wrap {
+  padding-top: 55%;
+}
+
+body.tv-mode .service-title {
+  font-size: 1.3rem;
+  line-height: 1.35;
+}
+
+body.tv-mode .company-name {
+  font-size: 0.95rem;
+}
+
+body.tv-mode .service-desc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+body.tv-mode .feature-bullet {
+  font-size: 0.88rem;
+  padding: 4px 8px;
+}
+
+body.tv-mode .tag-chip {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+}
+
+body.tv-mode .card-rating {
+  font-size: 0.92rem;
+}
+
+body.tv-mode .btn {
+  min-height: 48px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+}
+
+body.tv-mode .modal-card {
+  max-width: 820px;
+}
+
+body.tv-mode .modal-card.modal-lg {
+  max-width: 960px;
+}
+
+body.tv-mode .modal-header h3 {
+  font-size: 1.45rem;
+}
+
+body.tv-mode .form-group label {
+  font-size: 0.95rem;
+}
+
+body.tv-mode .form-group input,
+body.tv-mode .form-group select,
+body.tv-mode .form-group textarea {
+  font-size: 1.05rem;
+  padding: 12px 14px;
+}
+
+/* ================= 4K / LARGE SCREEN ADAPTATIONS ================= */
+@media (min-width: 1920px) {
+  .header-container,
+  .metrics-container,
+  .ribbon-container,
+  .layout-container,
+  .ticker-container {
+    max-width: 1840px;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .brand-name {
+    font-size: 1.5rem;
+  }
+
+  .nav-link {
+    font-size: 0.92rem;
+    padding: 7px 12px;
+  }
+}
+
+@media (min-width: 2560px) {
+  html {
+    font-size: 20px;
+  }
+
+  .header-container,
+  .metrics-container,
+  .ribbon-container,
+  .layout-container,
+  .ticker-container {
+    max-width: 2400px;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+
+  .filters-sidebar {
+    width: 380px;
+  }
+
+  .service-title {
+    font-size: 1.35rem;
+  }
+
+  .btn {
+    min-height: 52px;
+    font-size: 1.05rem;
+  }
+}
+
+/* Media query for dedicated TV devices */
+@media (tv) {
+  body {
+    font-size: 20px;
+  }
+  .tv-remote-hud {
+    display: block;
   }
 }
 
