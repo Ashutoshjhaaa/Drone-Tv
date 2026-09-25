@@ -1,0 +1,18 @@
+{
+  "name": "dronetv-service-page",
+  "version": "1.0.0",
+  "description": "DroneTV.in - India's #1 Drone Industry Platform Services Page",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve -l 3000 .",
+    "start": "npx serve -l 3000 .",
+    "serve": "npx serve -l 3000 ."
+  },
+  "keywords": [
+    "drone",
+    "services",
+    "dronetv"
+  ],
+  "author": "DroneTV",
+  "license": "MIT"
+}
