@@ -555,13 +555,21 @@ document.addEventListener('DOMContentLoaded', () => {
       <article class="service-card" data-id="${service.id}" data-category="${service.category}">
         <div class="card-thumb-wrap">
           <img src="${service.image}" alt="${service.title}" class="card-img" loading="lazy">
-          <span class="badge ${service.badgeClass}">${service.badge}</span>
-          <button type="button" class="wishlist-btn ${isSaved ? 'saved' : ''}" 
-                  title="${isSaved ? 'Remove from Saved' : 'Save Service'}" 
-                  data-service-id="${service.id}" 
-                  aria-label="${isSaved ? 'Saved to Wishlist' : 'Add to Wishlist'}">
-            <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
-          </button>
+          <div class="card-top-actions">
+            <button type="button" class="share-btn" 
+                    title="Share Service" 
+                    data-service-id="${service.id}" 
+                    data-title="${service.title}" 
+                    aria-label="Share ${service.title}">
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+            <button type="button" class="wishlist-btn ${isSaved ? 'saved' : ''}" 
+                    title="${isSaved ? 'Remove from Saved' : 'Save Service'}" 
+                    data-service-id="${service.id}" 
+                    aria-label="${isSaved ? 'Saved to Wishlist' : 'Add to Wishlist'}">
+              <i class="${isSaved ? 'fa-solid text-red-500' : 'fa-regular text-red-500'} fa-heart"></i>
+            </button>
+          </div>
         </div>
         
         <div class="card-body">
@@ -585,9 +593,12 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
 
           <div class="card-rating">
-            <i class="fa-solid fa-star star-filled"></i>
-            <span class="rating-score">${service.rating.toFixed(1)}</span>
-            <span class="reviews-count">(${service.reviews} verified reviews)</span>
+            <span class="badge ${service.badgeClass}">${service.badge}</span>
+            <div class="rating-info">
+              <i class="fa-solid fa-star star-filled"></i>
+              <span class="rating-score">${service.rating.toFixed(1)}</span>
+              <span class="reviews-count">(${service.reviews})</span>
+            </div>
           </div>
 
           <div class="card-actions">
@@ -806,6 +817,41 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(`Removed "${item.title}" from saved list.`, 'info');
         } else {
           showToast(`Saved "${item.title}" to your favorites!`, 'wishlist');
+        }
+      });
+    });
+
+    // 2. Share Buttons
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-service-id');
+        const title = btn.getAttribute('data-title') || 'Drone Service';
+        const shareUrl = `${window.location.origin}${window.location.pathname}#service-${id}`;
+
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: `DroneTV.in — ${title}`,
+              text: `Check out ${title} on India's #1 Drone Industry Platform:`,
+              url: shareUrl
+            });
+            showToast(`Shared "${title}" successfully!`, 'success');
+            return;
+          } catch (err) {
+            if (err.name === 'AbortError') return;
+          }
+        }
+
+        // Fallback: Copy to clipboard
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            showToast(`🔗 Link for "${title}" copied to clipboard!`, 'success');
+          }).catch(() => {
+            showToast(`🔗 Link: ${shareUrl}`, 'info');
+          });
+        } else {
+          showToast(`🔗 Link: ${shareUrl}`, 'info');
         }
       });
     });

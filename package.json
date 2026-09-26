@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "npx serve -l 3000 .",
     "start": "npx serve -l 3000 .",
-    "serve": "npx serve -l 3000 ."
+    "serve": "npx serve -l 3000 .",
+    "build:css": "npx @tailwindcss/cli -i styles.css -o dist/styles.css --minify",
+    "watch:css": "npx @tailwindcss/cli -i styles.css -o dist/styles.css --watch"
   },
   "keywords": [
     "drone",
@@ -14,5 +16,16 @@
     "dronetv"
   ],
   "author": "DroneTV",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.1"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
 }

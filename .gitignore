@@ -22,11 +22,14 @@ lerna-debug.log*
 # Build & Distribution Artifacts
 # ==========================================
 dist/
+dist-ssr/
 build/
 out/
 .cache/
 .temp/
 tmp/
+.vite/
+coverage/
 
 # ==========================================
 # Operating System Files
